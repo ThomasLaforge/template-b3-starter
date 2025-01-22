@@ -13,6 +13,16 @@ Content-Type: application/json
 GET http://localhost/api/voitures
 
 ###
+GET http://localhost/api/voitures?pagination[limit]=2&pagination[start]=1
+### GET the first 6 alphabetically
+
+###
+GET http://localhost/api/movies?sort[0]=title:asc&pagination[start]=0&pagination[limit]=6
+Content-Type: application/json
+###
+ 
+
+###
 GET http://localhost/api/voitures/22
 
 ###

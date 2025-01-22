@@ -37,7 +37,21 @@ voitureRouter.put("/:id", async (req, res) => {
 })
 
 voitureRouter.get("/", async (req, res) => {
-  const voitures = await Voiture.findAll();
+  console.log("query", req.query);
+  let voitures = await Voiture.findAll();
+  const pagination = req.query.pagination as { limit?: string, start?: string };
+  
+
+  if(pagination && pagination.limit){
+    let start = 0;
+    let end = parseInt(pagination.limit);
+    if(pagination.start){
+      start += parseInt(pagination.start);
+      end += parseInt(pagination.start);
+    }
+    voitures = voitures.slice(start, end);
+  }
+
   res.json(voitures);
 })
 

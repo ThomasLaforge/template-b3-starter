@@ -4,7 +4,7 @@ import { DataTypes, Model, Sequelize } from "sequelize";
 
 interface VoitureAttributes {
     name: string;
-    immatriculation_date: number;
+    immatriculation_date: number,
 }
 
 export interface VoitureInstance extends VoitureAttributes {

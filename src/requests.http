@@ -1,5 +1,5 @@
 ###
-POST http://localhost/api/voitures
+POST http://localhost:1338/api/voitures
 Content-Type: application/json
 
 {
@@ -10,7 +10,7 @@ Content-Type: application/json
 }
 
 ###
-GET http://localhost/api/voitures
+GET http://localhost:1338/api/voitures
 
 ###
 GET http://localhost/api/voitures?pagination[limit]=2&pagination[start]=1
@@ -38,3 +38,24 @@ Content-Type: application/json
 
 ###
 DELETE http://localhost/api/voitures/2
+
+###
+POST http://localhost:1338/api/auth/register
+Content-Type: application/json
+
+{
+    "username": "toto",
+    "email": "toto@gmal.com",
+    "password": "mdp"
+}
+
+###
+GET http://localhost:1338/api/voitures
+Authorization: BASIC toto:mdp
+
+###
+GET http://localhost:1338/api/voitures
+
+###
+GET http://localhost:1338/api/voitures/1
+Authorization: BASIC toto:mdp

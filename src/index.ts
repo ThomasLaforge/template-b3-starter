@@ -1,10 +1,11 @@
 import cors from "cors";
 import "dotenv/config";
-import express from "express";
+import express, { NextFunction, Request, Response } from "express";
 import { Sequelize } from "sequelize";
 
 import { ConducteurModel } from "./model/Conducteur";
 import { ConducteurVoitureModel } from "./model/ConducteurVoiture";
+import { UserModel } from "./model/User";
 import { VoitureModel } from "./model/Voiture";
 import { voitureRouter } from "./router/voitures";
 
@@ -13,6 +14,7 @@ export const sequelize = new Sequelize({
   storage: 'db/database.sqlite'
 });
 
+export const User = UserModel(sequelize);
 export const Voiture = VoitureModel(sequelize);
 export const Conducteur = ConducteurModel(sequelize);
 export const ConducteurVoiture = ConducteurVoitureModel(sequelize);
@@ -23,35 +25,32 @@ Conducteur.belongsToMany(Voiture, { through: ConducteurVoiture });
 // sequelize.sync({ force: true });
 sequelize.sync();
 
-setTimeout( async () => {
-  // await Voiture.create({ name: "Peugeot 206", immatriculation_date: 2001 });
-  // await Voiture.create({ name: "Renault Clio", immatriculation_date: 2005 });
+const app = express();
 
-  // await Conducteur.create({ firstName: "Jean", lastName: "Dupont"});
-  // await Conducteur.create({ firstName: "Marie", lastName: "Durand"});
+export async function monMiddleware(req: Request, res: Response, next: NextFunction){
+  if(!req.headers.authorization){
+    res.status(401).json({ message: 'Unauthorized' });
+    return;
+  }
+  console.log('authorization', req.headers.authorization)
+  const b64auth = (req.headers.authorization || '').split(' ')[1] || ''
+  const [login, password] = Buffer.from(b64auth, 'base64').toString().split(':')
+  console.log(login, password)
 
-  // await ConducteurVoiture.create({ voitureId: 1, conducteurId: 2 });
-  // await ConducteurVoiture.create({ voitureId: 2, conducteurId: 1 });
-
-  const data = await Conducteur.findAll({
-    include: Voiture,
+  const user = await User.findOne({
     where: {
-      firstName: "Jean"
+      login: login,
+      password: password
     }
   })
 
-  // SELECT *
-  // FROM Conducteur, Voiture
-  // WHERE Conducteur.firstName = "Jean" AND Conducteur.id = ConducteurVoiture.conducteurId AND Voiture.id = ConducteurVoiture.voitureId
-
-  const premierConducteur = data[0];
-  if(premierConducteur.dataValues.voitures){
-    console.log(premierConducteur.dataValues.voitures[0].dataValues);
+  if (!user) {
+    res.status(403).json({ message: 'Forbidden' });
   }
-  
+  else {
+    next();
+  }
 }
-, 2000);
-const app = express();
 
 app.use(cors());
 app.use(express.json());
@@ -59,7 +58,16 @@ app.use(express.json());
 const apiRouter = express.Router();
 apiRouter.use("/voitures", voitureRouter)
 
-app.use("/api", apiRouter);
+apiRouter.post("/auth/register", async (req, res) => {
+  const user = await User.create({
+    login: req.body.username,
+    password: req.body.password
+  });
+  res.json(user.dataValues);
+})
+
+app.use("/api", monMiddleware, apiRouter);
+
 
 app.listen(process.env.PORT, () => {
   console.log(`Example app listening on port ${process.env.PORT}!`)

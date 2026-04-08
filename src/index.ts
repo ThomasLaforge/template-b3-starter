@@ -26,6 +26,10 @@ apiRouter.use("/voitures", voitureRouter)
 
 app.use("/api", apiRouter);
 
+app.get("/", (req, res) => {
+  res.send("Bravo les champions !");
+});
+
 app.listen(process.env.PORT, () => {
   console.log(`Example app listening on port ${process.env.PORT}!`)
 });
